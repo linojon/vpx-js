@@ -79,7 +79,7 @@ export class Texture extends BiffParser {
 	}
 
 	public getName(): string {
-		return this.localFileName ? basename(this.localFileName) : this.szInternalName.toLowerCase();
+		return this.localFileName ? basename(this.localFileName) : (this.szInternalName?.toLowerCase() || this.szPath || `idunno-${Math.random() * 100000}`);
 	}
 
 	/**
@@ -139,7 +139,7 @@ export class Texture extends BiffParser {
 			case 'ALTV': this.alphaTestValue = this.getFloat(buffer); break;
 			case 'BITS':
 				let compressedLen: number;
-				[ this.pdsBuffer, compressedLen ] = await BaseTexture.get(storage, itemName, offset, this.width, this.height);
+				[this.pdsBuffer, compressedLen] = await BaseTexture.get(storage, itemName, offset, this.width, this.height);
 				return compressedLen + 4;
 
 			/* istanbul ignore next: duh. */
@@ -180,7 +180,7 @@ class BaseTexture {
 
 		const lzw = new LzwReader(compressed, width * 4, height, pdsBuffer.pitch());
 		let compressedLen: number;
-		[ pdsBuffer.data, compressedLen ] = lzw.decompress();
+		[pdsBuffer.data, compressedLen] = lzw.decompress();
 
 		const lpitch = pdsBuffer.pitch();
 
@@ -206,7 +206,7 @@ class BaseTexture {
 			}
 		}
 		pdsBuffer.data = pdsBuffer.rgbToBgr(width, height);
-		return [ pdsBuffer, compressedLen ];
+		return [pdsBuffer, compressedLen];
 	}
 
 	private rgbToBgr(width: number, height: number): Buffer {
